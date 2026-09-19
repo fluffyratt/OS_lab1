@@ -1,0 +1,40 @@
+# Visual Studio
+.vs/
+**/Debug/
+**/Release/
+**/x64/
+**/x86/
+
+# Build files
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.ipdb
+*.iobj
+*.log
+*.tlog
+*.lastbuildstate
+
+# User-specific Visual Studio files
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Python virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Temporary benchmark files
+tmp_*.txt
+bench.sock
+
+# OS
+Thumbs.db
+.DS_Store

@@ -1,0 +1,7 @@
+﻿impl,transport,conns,connections_per_s,socket_us,connect_us,close_us
+blocking,tcp,1,4156,27.71,192.91,19.83
+blocking,unix,1,7137,26.54,103.37,10.08
+nonblocking,tcp,1,77,74.95,12840.26,113.31
+nonblocking,unix,1,176,36.19,5632.08,24.61
+async,tcp,1,5408,20.53,146.87,16.66
+async,unix,1,7274,29.51,97.02,8.26
