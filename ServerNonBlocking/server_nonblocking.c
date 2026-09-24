@@ -92,10 +92,6 @@ int main(int argc, char** argv)
             pollfds[count].fd = clients[i].socket;
             pollfds[count].events = POLLRDNORM;
 
-            /*
-             * Якщо залишилися дані, які send() не зміг
-             * відправити раніше — чекаємо writable.
-             */
             if (clients[i].out_sent < clients[i].out_size) {
                 pollfds[count].events |= POLLWRNORM;
             }
@@ -235,9 +231,6 @@ int main(int argc, char** argv)
              * ----------------------------------------
              * RECEIVE
              * ----------------------------------------
-             *
-             * Поки є невідправлений echo, нові дані
-             * не читаємо. Так out_buf не перезапишеться.
              */
 
             if ((events & POLLRDNORM) &&
@@ -253,10 +246,6 @@ int main(int argc, char** argv)
                     client->out_size = received;
                     client->out_sent = 0;
 
-                    /*
-                     * Пробуємо send() одразу.
-                     * Він non-blocking.
-                     */
                     int sent =
                         send(client->socket,
                             client->out_buf,
@@ -282,9 +271,6 @@ int main(int argc, char** argv)
                     }
                 }
                 else if (received == 0) {
-                    /*
-                     * Client gracefully closed.
-                     */
                     closesocket(client->socket);
                     client->socket = INVALID_SOCKET;
                 }

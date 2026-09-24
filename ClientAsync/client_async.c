@@ -291,15 +291,8 @@ static int run_echo(void)
         );
     }
 
-    /*
-     * Benchmark починається тут.
-     */
     uint64_t start = now_ns();
 
-    /*
-     * Для кожного connection запускаємо
-     * перший asynchronous send.
-     */
     for (int i = 0; i < g_conns; i++) {
 
         if (clients[i].failed)
@@ -317,10 +310,6 @@ static int run_echo(void)
         (uint64_t)g_count *
         (uint64_t)g_conns;
 
-    /*
-     * Один event loop обслуговує
-     * ВСІ connections.
-     */
     while (total_messages < expected_messages) {
 
         WSAEVENT events[WSA_MAXIMUM_WAIT_EVENTS];
@@ -445,10 +434,6 @@ static int run_echo(void)
                 continue;
             }
 
-            /*
-             * Усе повідомлення відправлено.
-             * Тепер асинхронно очікуємо echo.
-             */
             client->send_offset = 0;
             client->recv_offset = 0;
 
@@ -490,10 +475,6 @@ static int run_echo(void)
                 continue;
             }
 
-            /*
-             * Один повний request-response
-             * завершено.
-             */
             client->recv_offset = 0;
 
             client->completed++;
@@ -610,14 +591,6 @@ static int run_echo(void)
 
 /* =========================================================
  * CONNECTION SETUP BENCHMARK
- *
- * Тут async стосується data I/O.
- *
- * connect() залишаємо звичайним, оскільки
- * connection setup є додатковою метрикою.
- * Для справжнього asynchronous connect
- * Windows має ConnectEx(), але це вже
- * окремий механізм.
  * ========================================================= */
 
 static unsigned __stdcall
@@ -803,10 +776,6 @@ static int run_conn(void)
     return failed;
 }
 
-
-/* =========================================================
- * MAIN
- * ========================================================= */
 
 static void usage(const char* program)
 {

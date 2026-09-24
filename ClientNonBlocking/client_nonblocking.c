@@ -30,11 +30,6 @@ static int g_mode_conn = 0;
 static HANDLE g_ready;
 static HANDLE g_start;
 
-
-/*
- * Чекаємо, поки non-blocking socket стане
- * readable або writable.
- */
 static int wait_socket(SOCKET s, short event)
 {
     WSAPOLLFD fd;
@@ -61,13 +56,6 @@ static int wait_socket(SOCKET s, short event)
 }
 
 
-/*
- * Non-blocking connect.
- *
- * connect() запускає операцію.
- * Якщо вона не завершилась одразу —
- * WSAPoll чекає writable.
- */
 static int connect_nonblocking(SOCKET s, const endpoint_t* ep)
 {
     int r = connect(
@@ -93,10 +81,6 @@ static int connect_nonblocking(SOCKET s, const endpoint_t* ep)
         return -1;
     }
 
-    /*
-     * Після readiness перевіряємо,
-     * чи connect реально завершився успішно.
-     */
     int so_error = 0;
     int len = sizeof so_error;
 
@@ -119,10 +103,6 @@ static int connect_nonblocking(SOCKET s, const endpoint_t* ep)
 }
 
 
-/*
- * Аналог send_all(), але для
- * non-blocking socket.
- */
 static int send_all_nonblocking(
     SOCKET s,
     const char* buf,
@@ -162,10 +142,6 @@ static int send_all_nonblocking(
 }
 
 
-/*
- * Аналог recv_all(), але для
- * non-blocking socket.
- */
 static int recv_all_nonblocking(
     SOCKET s,
     char* buf,
@@ -255,10 +231,6 @@ static unsigned __stdcall echo_worker(void* arg)
         }
     }
 
-    /*
-     * Всі workers спочатку встановлюють connection,
-     * а benchmark стартує одночасно.
-     */
     ReleaseSemaphore(g_ready, 1, NULL);
     WaitForSingleObject(g_start, INFINITE);
 

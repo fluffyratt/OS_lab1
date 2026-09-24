@@ -9,14 +9,6 @@
 
 #define BUF_SIZE (1 << 16)
 
-/*
- * WSAWaitForMultipleEvents може чекати максимум
- * WSA_MAXIMUM_WAIT_EVENTS (= 64) events.
- *
- * Один event займає listening socket,
- * тому для клієнтів залишаємо 63.
- *
- */
 #define MAX_CLIENTS (WSA_MAXIMUM_WAIT_EVENTS - 1)
 
 typedef enum {
@@ -44,10 +36,6 @@ typedef struct {
 static client_t clients[MAX_CLIENTS];
 
 
-/*
- * Створення listening socket з явним
- * WSA_FLAG_OVERLAPPED.
- */
 static SOCKET create_listen_socket(
     const endpoint_t* ep,
     int backlog)
@@ -112,10 +100,6 @@ static void close_client(client_t* client)
 }
 
 
-/*
- * Підготувати WSAOVERLAPPED перед
- * наступною async operation.
- */
 static void prepare_overlapped(client_t* client)
 {
     WSAEVENT event = client->event;
@@ -132,9 +116,6 @@ static void prepare_overlapped(client_t* client)
 }
 
 
-/*
- * Запускаємо asynchronous receive
- */
 static int post_recv(client_t* client)
 {
     prepare_overlapped(client);
@@ -158,11 +139,6 @@ static int post_recv(client_t* client)
     );
 
     if (r == 0) {
-        /*
-         * Операція могла завершитися одразу.
-         * Completion event все одно використовується
-         * для обробки результату.
-         */
         return 0;
     }
 
@@ -178,9 +154,7 @@ static int post_recv(client_t* client)
 }
 
 
-/*
- * Запускаємо asynchronous send.
- */
+
 static int post_send(client_t* client)
 {
     prepare_overlapped(client);
@@ -247,13 +221,6 @@ static int add_client(
     client->socket = socket;
     client->active = 1;
 
-    /*
-     * Listening socket використовує WSAEventSelect,
-     * тому явно повертаємо accepted socket
-     * до звичайного blocking mode.
-     *
-     * Overlapped I/O не потребує non-blocking mode.
-     */
     WSAEventSelect(socket, NULL, 0);
     set_nonblock(socket, 0);
 
@@ -313,9 +280,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    /*
-     * Окремий event для FD_ACCEPT.
-     */
     WSAEVENT listen_event = WSACreateEvent();
 
     if (listen_event == WSA_INVALID_EVENT) {
@@ -325,14 +289,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    /*
-     * Listening socket стає event-driven.
-     * WSAEventSelect також переводить його
-     * у non-blocking mode.
-     *
-     * Передача даних клієнтів при цьому
-     * виконується через overlapped I/O.
-     */
     if (WSAEventSelect(
         listen_socket,
         listen_event,
@@ -362,17 +318,10 @@ int main(int argc, char** argv)
 
         DWORD event_count = 0;
 
-        /*
-         * index 0 = listening socket.
-         */
         events[event_count] = listen_event;
         map[event_count] = -1;
         event_count++;
 
-        /*
-         * Решта events = pending overlapped
-         * operation кожного клієнта.
-         */
         for (int i = 0; i < MAX_CLIENTS; i++) {
 
             if (!clients[i].active)
@@ -532,10 +481,6 @@ int main(int argc, char** argv)
         if (!ok) {
             int err = WSAGetLastError();
 
-            /*
-             * Connection reset / closed —
-             * просто прибираємо клієнта.
-             */
             if (err != WSAECONNRESET &&
                 err != WSAECONNABORTED) {
 
@@ -556,18 +501,12 @@ int main(int argc, char** argv)
 
         if (client->operation == OP_RECV) {
 
-            /*
-             * 0 bytes означає graceful close.
-             */
+   
             if (transferred == 0) {
                 close_client(client);
                 continue;
             }
-
-            /*
-             * Треба echo рівно тих байтів,
-             * які прийшли.
-             */
+     
             client->send_total = transferred;
             client->send_offset = 0;
 
@@ -593,9 +532,7 @@ int main(int argc, char** argv)
 
             client->send_offset += transferred;
 
-            /*
-             * Partial send.
-             */
+         
             if (client->send_offset
                 < client->send_total) {
 
@@ -606,10 +543,7 @@ int main(int argc, char** argv)
                 continue;
             }
 
-            /*
-             * Весь echo відправлено.
-             * Одразу постимо наступний WSARecv().
-             */
+      
             client->send_total = 0;
             client->send_offset = 0;
 
