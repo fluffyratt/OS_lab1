@@ -1,15 +1,3 @@
-/*
- * Режими:
- *   -m echo : C потоків, у кожного своє з'єднання; N разів send(S) + recv(S).
- *             Результат: msg/s, MB/s, середній RTT.
- *   -m conn : C потоків; N разів socket() / connect() / closesocket().
- *             Результат: середній час кожної операції.
- *
- * Приклади:
- *   client_blocking.exe -a tcp:127.0.0.1:9000 -m echo -s 64 -n 200000 -c 1
- *   client_blocking.exe -a unix:bench.sock -m conn -n 3000
- *
- */
 #include "../common.h"
 
 #include <process.h>
@@ -30,10 +18,8 @@ static long g_count = 100000;
 static int  g_conns = 1;
 static int  g_mode_conn = 0;
 
-/* Аналог pthread_barrier: воркери сигналять "готовий",
- * потім усі чекають на спільну подію старту. */
-static HANDLE g_ready;   /* семафор */
-static HANDLE g_start;   /* manual-reset event */
+static HANDLE g_ready;  
+static HANDLE g_start;  
 
 static unsigned __stdcall echo_worker(void *arg)
 {
@@ -101,7 +87,7 @@ static void usage(const char *p)
 int main(int argc, char **argv)
 {
     const char *addr = NULL;
-    for (int i = 1; i < argc; i++) {           /* getopt у Windows немає */
+    for (int i = 1; i < argc; i++) {           
         const char *o = argv[i];
         if (i + 1 >= argc) usage(argv[0]);
         const char *v = argv[++i];

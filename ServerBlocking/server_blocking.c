@@ -1,9 +1,3 @@
-/*
- * Модель: accept() у головному потоці + окремий потік на кожне з'єднання.
- *
- *   server_blocking.exe tcp:127.0.0.1:9000
- *   server_blocking.exe unix:bench.sock
- */
 #include "../common.h"
 
 #include <process.h>
@@ -21,9 +15,9 @@ static unsigned __stdcall handle_client(void *arg)
     char *buf = malloc(BUF_SIZE);
     if (buf) {
         for (;;) {
-            int r = recv(s, buf, BUF_SIZE, 0);     /* блокується */
-            if (r <= 0) break;                     /* 0 = клієнт закрив */
-            if (send_all(s, buf, r) < 0) break;    /* блокується */
+            int r = recv(s, buf, BUF_SIZE, 0);     
+            if (r <= 0) break;                    
+            if (send_all(s, buf, r) < 0) break;    
         }
         free(buf);
     }
@@ -58,7 +52,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "_beginthreadex failed\n");
             closesocket(cs);
         } else {
-            CloseHandle((HANDLE)th);   /* потік "detached" */
+            CloseHandle((HANDLE)th);   
         }
     }
 }
